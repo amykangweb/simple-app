@@ -1,0 +1,8 @@
+a {
+  text-decoration: none;
+}
+
+.on {
+  text-decoration: underline;
+  font-weight: bold;
+}
