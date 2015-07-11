@@ -2,7 +2,15 @@ a {
   text-decoration: none;
 }
 
+a:hover {
+  color: red;
+}
+
 .on {
   text-decoration: underline;
   font-weight: bold;
+}
+
+.list li {
+  padding: 5px;
 }
