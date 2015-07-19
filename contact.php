@@ -1,16 +1,59 @@
 <?php
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $name = $_POST["name"];
-  $email = $_POST["email"];
-  $message = $_POST["message"];
+  $name = trim($_POST["name"]);
+  $email = trim($_POST["email"]);
+  $message = trim($_POST["message"]);
+
+  if($name == "" OR $email == "" OR $message == "") {
+    echo "You must enter a name, email, and message.";
+    exit;
+  }
+
+  // stop contact form injection
+  foreach($_POST as $value) {
+    if(stripos($value, 'Content-Type:') !== FALSE) {
+      echo "There was a problem with the information you entered.";
+      exit;
+    }
+  }
+
+  // honey pot trap to check for spam bots
+  if($_POST["address"] != "") {
+    echo "Your form submission has an error.";
+    exit;
+  }
+
+  include('PHPMailer/class.smtp.php');
+  require 'PHPMailer/PHPMailerAutoload.php';
+
+  $mail = new PHPMailer;
+
+  if(!$mail->ValidateAddress($email)) {
+    echo "The email is not valid";
+    exit;
+  }
 
   $email_body = "";
-  $email_body = $email_body . "Name: " . $name . "\n";
-  $email_body = $email_body . "Email: " . $email . "\n";
-  $email_body = $email_body . "Message: " . $message . "\n";
+  $email_body = $email_body . "Name: " . $name . "<br>";
+  $email_body = $email_body . "Email: " . $email . "<br>";
+  $email_body = $email_body . "Message: " . $message . "<br>";
 
-  // TODO: Send Email
+  $mail->From = $email;
+  $mail->FromName = $name;
+  $mail->addAddress('selene6023@gmail.com', 'Shirts 4 Mike'); // Add a recipient
+
+  $mail->isHTML(true);                                  // Set email format to HTML
+
+  $mail->Subject = 'Shirts 4 Mike Contact Form Submission | ' . $name;
+  $mail->Body    = $email_body;
+  // $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+  if(!$mail->send()) {
+      echo 'Message could not be sent.';
+      echo 'There was a problem sending the email: ' . $mail->ErrorInfo;
+      exit;
+  }
 
   header("Location: contact.php?status=thanks");
   exit;
@@ -54,6 +97,15 @@ include('header.php'); ?>
         </th>
         <td>
           <textarea name="message" id="message"></textarea>
+        </td>
+      </tr>
+      <tr style="display: none;">
+        <th>
+          <label for="address">Address</label>
+        </th>
+        <td>
+          <input type="text" name="address" id="address">
+          <p>Humans: Please leave this field blank.</p>
         </td>
       </tr>
   </table>
